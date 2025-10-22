@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -31,7 +30,7 @@ public class TaskController {
     ResponseEntity<?> getTaskById(@PathVariable Long id){
         Optional<Task> task = taskService.findById(id);
         if(task.isEmpty()){
-          throw new NotFoundException("Task not found");
+            throw new NotFoundException("Task not found");
         }
         return ResponseEntity.ok(task);
     }
@@ -45,6 +44,24 @@ public class TaskController {
         return ResponseEntity.ok(taskSaved);
     }
 
+    @PostMapping("/toggle/{id}")
+    ResponseEntity<?> updateStatusTask(@PathVariable Long id){
+        Optional<Task> task = taskService.findById(id);
+        if(task.isEmpty()){
+            throw new NotFoundException("Task Not found");
+        }
+        task.get().setDone(!task.get().isDone());
+        Task taskSaved = taskService.saveTask(task.get());
+        return ResponseEntity.ok(taskSaved);
+    }
+
+    ResponseEntity<?> deleteTask(@PathVariable Long id){
+       if(taskService.findById(id).isEmpty()){
+           throw new NotFoundException("Task not found");
+       }
+       taskService.deleteTask(id);
+        return ResponseEntity.ok().build();
+    }
 
 
 

@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleCustomBadRequest(BadRequestException ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                        "status",400,
+                        "status",ex.statusCode,
                         "error", "Bad Request",
                         "message",ex.getMessage()
                 ));
@@ -26,7 +26,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleCustomNotFound(NotFoundException ex){
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
-                        "status",400,
+                        "status",ex.statusCode,
                         "error", "Resource not found",
                         "message",ex.getMessage()
                 ));

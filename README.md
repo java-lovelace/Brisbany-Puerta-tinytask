@@ -2,8 +2,6 @@
 
 A minimal RESTful API for managing tasks built with Spring Boot. It exposes endpoints to create and fetch tasks and persists data in PostgreSQL via Spring Data JPA.
 
-> Note: This README documents the current state of the repository based on the code. If something is missing or incorrect, see the TODOs and adjust accordingly.
-
 ## Stack
 - Language: Java 21
 - Framework: Spring Boot 3.5.6

@@ -55,6 +55,7 @@ public class TaskController {
         return ResponseEntity.ok(taskSaved);
     }
 
+    @DeleteMapping("/{id}")
     ResponseEntity<?> deleteTask(@PathVariable Long id){
        if(taskService.findById(id).isEmpty()){
            throw new NotFoundException("Task not found");

@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
                         "status",ex.statusCode,
-                        "error", "Bad Request",
+                        "error", ex.error,
                         "message",ex.getMessage()
                 ));
     }
@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of(
                         "status",ex.statusCode,
-                        "error", "Resource not found",
+                        "error", ex.error,
                         "message",ex.getMessage()
                 ));
     }

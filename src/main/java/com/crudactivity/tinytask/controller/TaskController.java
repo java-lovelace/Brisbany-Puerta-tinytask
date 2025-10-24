@@ -44,7 +44,7 @@ public class TaskController {
         return ResponseEntity.ok(taskSaved);
     }
 
-    @PostMapping("/toggle/{id}")
+    @PatchMapping("/toggle/{id}")
     ResponseEntity<?> updateStatusTask(@PathVariable Long id){
         Optional<Task> task = taskService.findById(id);
         if(task.isEmpty()){

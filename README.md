@@ -1,134 +1,104 @@
-# TinyTask
 
-A minimal RESTful API for managing tasks built with Spring Boot. It exposes endpoints to create and fetch tasks and persists data in PostgreSQL via Spring Data JPA.
+# ✅ TinyTask: A Minimal Task Management API
 
-## Stack
-- Language: Java 21
-- Framework: Spring Boot 3.5.6
-- Modules/Starters:
-  - spring-boot-starter-web
-  - spring-boot-starter-data-jpa
-  - spring-boot-starter-test (tests)
-- Database: PostgreSQL (JDBC driver)
-- Helper libs: Lombok (annotation processing)
-- Build/Package manager: Maven (wrapper included: `mvnw`/`mvnw.cmd`)
+**TinyTask** is a minimal RESTful API built to manage tasks. It provides core endpoints to create, read, toggle the status, and delete tasks. The application uses **Spring Boot 3.5.6** and persists data in a **PostgreSQL** database via **Spring Data JPA**.
 
-## Application entry point
-- Main class: `com.crudactivity.tinytask.TinytaskApplication`
-- Starts an embedded server (default configured to port 5050 in this project) and registers REST controllers.
+## 💻 Technical Stack
 
-## REST API overview
-Base path: `/api/tasks`
+| Component | Technology/Library | Version/Details |
+| :--- | :--- | :--- |
+| **Language** | Java | 21 (JDK 21) |
+| **Framework** | Spring Boot | 3.5.6 |
+| **Persistence** | Spring Data JPA | Handles ORM via Hibernate |
+| **Database** | PostgreSQL | JDBC driver included |
+| **Build Tool** | Maven Wrapper | `mvnw`/`mvnw.cmd` included |
+| **Helper** | Lombok | Boilerplate code reduction |
 
-Implemented endpoints (from `TaskController`):
-- GET `/api/tasks`
-  - Returns: list of all tasks (HTTP 200)
-- GET `/api/tasks/{id}`
-  - Path variable: `id` (Long)
-  - Returns: the task when found (HTTP 200)
-  - Errors:
-    - 404 Not Found via `NotFoundException` when task is absent
-- POST `/api/tasks`
-  - Body (JSON): `{ "title": string, "done": boolean? }`
-  - Validations: `title` must not be empty (400 Bad Request)
-  - Returns: created task (HTTP 200)
+The application's entry point is the main class: `com.crudactivity.tinytask.TinytaskApplication`.
 
-Global error handling: `GlobalExceptionHandler` maps custom exceptions such as `BadRequestException` and `NotFoundException` to appropriate HTTP responses.
+---
 
-> TODO: If PUT/PATCH/DELETE endpoints are added later (e.g., update or delete a task), document them here. The `TaskService` contains a `deleteTask` method, but there is currently no controller mapping exposing it.
+## 📌 Domain Model & Validation
 
-## Domain model
-- `Task` entity with fields:
-  - `id` (Long, primary key)
-  - `title` (String, required)
-  - `done` (Boolean, defaults to false)
+The API manages a single entity: **`Task`**.
 
-There is a `script.sql` with initial DDL/DML you can use to bootstrap a database table and seed one example row.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `Long` | Primary key. |
+| `title` | `String` | The task description. **Required and must not be empty**. |
+| `done` | `Boolean` | Completion status (e.g., `true` or `false`). Defaults to `false`. |
 
-## Requirements
-- Java 21 (ensure `JAVA_HOME` points to a JDK 21+ distribution)
-- Maven 3.9+ (optional, Maven Wrapper is included so not strictly required)
-- PostgreSQL 14+ (tested version not specified)
+### Error Handling
 
-## Configuration
-Main configuration file: `src/main/resources/application.properties`
+Custom exceptions (`BadRequestException`, `NotFoundException`) are handled by the **`GlobalExceptionHandler`** to map errors to appropriate HTTP status codes (e.g., **400 Bad Request**, **404 Not Found**).
 
-Current defaults:
-- `server.port=5050`
-- `spring.datasource.url=jdbc:postgresql://localhost:5432/tinytask`
-- `spring.datasource.username=...`
-- `spring.datasource.password=...`
-- `spring.jpa.hibernate.ddl-auto=update`
-- `spring.jpa.show-sql=true`
+---
 
-Recommended: do not hardcode credentials locally. Override via environment variables or a `application-local.properties` and activate it with a profile.
+## 🌐 REST API Overview
 
-Examples of environment variable overrides (Spring Boot binding):
-- `SERVER_PORT=8080`
-- `SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/tinytask`
-- `SPRING_DATASOURCE_USERNAME=postgres`
-- `SPRING_DATASOURCE_PASSWORD=secret`
+The base path for all task operations is **`/api/tasks`**. This is defined in the `TaskController`.
 
-To use a different profile:
-- Run with `-Dspring.profiles.active=local` (and create `application-local.properties`).
+| Action | Method | Path | Body / Params | HTTP Status | Notes |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **List All** | `GET` | `/api/tasks` | None | `200 OK` | Returns a list of all tasks. |
+| **Get By ID** | `GET` | `/api/tasks/{id}` | Path variable: `id` (`Long`) | `200 OK` or `404 Not Found` | Returns the task or an error if the ID is not found. |
+| **Create** | `POST` | `/api/tasks` | JSON: `{ "title": string, "done": boolean? }` | `200 OK` or `400 Bad Request` | `title` validation applies (cannot be empty). |
+| **Toggle Status** | `PATCH` | `/api/tasks/toggle/{id}` | Path variable: `id` (`Long`) | Implicit `200 OK` or `404 Not Found` | Toggles the boolean state of the `done` field. |
+| **Delete** | `DELETE` | `/api/tasks/{id}` | Path variable: `id` (`Long`) | Implicit `200 OK` or `404 Not Found` | Deletes the specified task. |
 
-## Database setup
-1. Create a PostgreSQL database (default name in config is `tinytask`):
-   - `createdb tinytask` or `CREATE DATABASE tinytask;`
-2. Ensure a user exists and has privileges, then set the URL/username/password accordingly.
-3. Optionally execute the seed script:
-   - File: `src/main/resources/script.sql`
-   - You can run it manually: `psql -d tinytask -f src/main/resources/script.sql`
+### CORS Configuration
 
-Note: `spring.jpa.hibernate.ddl-auto=update` will create/update tables based on the entity model. If you prefer DDL migrations, consider adding Flyway or Liquibase. (Not present in this repository.)
+A global CORS mapping is registered, allowing methods **GET**, **POST**, **PUT**, **DELETE**, and **PATCH** on all paths. Other CORS attributes follow Spring MVC defaults.
 
-## Build and run
-Using Maven Wrapper (recommended):
-- Build: `./mvnw clean package`
-- Run (dev): `./mvnw spring-boot:run`
-- Run (jar): `java -jar target/tinytask-0.0.1-SNAPSHOT.jar`
+---
 
-Using Maven (system):
-- Build: `mvn clean package`
-- Run: `mvn spring-boot:run`
+## ⚙️ Requirements & Configuration
 
-The server listens on `http://localhost:5050` by default (see `server.port`).
+### Prerequisites
 
-## Example requests
-- List tasks
-  - `curl -s http://localhost:5050/api/tasks`
-- Get by id
-  - `curl -s http://localhost:5050/api/tasks/1`
-- Create a task
-  - `curl -s -X POST http://localhost:5050/api/tasks -H 'Content-Type: application/json' -d '{"title":"Write README","done":false}'`
+* **Java 21** (Ensure `JAVA_HOME` is set).
+* **PostgreSQL 14+** instance running.
+* Maven Wrapper is included, so a system install of Maven is optional.
 
-## Scripts and common commands
-- `./mvnw spring-boot:run` — start the app in development
-- `./mvnw clean test` — run tests
-- `./mvnw clean package` — build a runnable JAR
-- `java -jar target/tinytask-0.0.1-SNAPSHOT.jar` — run the packaged app
+### Configuration Details
 
-> TODO: If you standardize scripts (e.g., Makefile, Docker, or npm/yarn scripts for frontend), list them here.
+The default configuration is in `src/main/resources/application.properties`:
 
-## Tests
-- Framework: JUnit 5 with Spring Boot Test
-- Entry test: `TinytaskApplicationTests#contextLoads` validates application context can start
-- Run tests: `./mvnw test`
+| Property | Default Value | Purpose |
+| :--- | :--- | :--- |
+| `server.port` | `5050` | The port the application runs on. |
+| `spring.datasource.url` | `jdbc:postgresql://localhost:5432/tinytask` | PostgreSQL connection URL (default DB name is `tinytask`). |
+| `spring.jpa.hibernate.ddl-auto` | `update` | Automatically creates/updates tables based on the entity model. |
+| `spring.jpa.show-sql` | `true` | Logs all SQL statements to the console. |
 
-> TODO: Add unit/integration tests for `TaskService` and `TaskController` to cover business logic and HTTP behavior.
 
-## Project structure
-- `pom.xml` — Maven configuration (Java 21, dependencies, plugins)
-- `src/main/java/com/crudactivity/tinytask/`
-  - `TinytaskApplication.java` — application entry point
-  - `controller/TaskController.java` — REST endpoints for tasks
-  - `controller/GlobalExceptionHandler.java` — maps exceptions to HTTP responses
-  - `entity/Task.java` — JPA entity for tasks
-  - `exception/*.java` — custom exceptions
-  - `repository/TaskRepository.java` — Spring Data JPA repository
-  - `service/TaskService.java` — business/service layer
-- `src/main/resources/`
-  - `application.properties` — default configuration
-  - `script.sql` — optional DDL/DML bootstrap
-- `src/test/java/.../TinytaskApplicationTests.java` — sample context load test
+### Database Setup
 
+1.  **Create Database:** Use `createdb tinytask` or `CREATE DATABASE tinytask;` in your PostgreSQL client.
+2.  **User Privileges:** Ensure the user in `spring.datasource.username`/`password` has access.
+3.  **Seed Data (Optional):** Manually execute `src/main/resources/script.sql` to bootstrap the table and add an example row.
+
+---
+
+## 🚀 Build and Run
+
+Use the Maven Wrapper (`./mvnw`) for these common commands:
+
+| Command | Purpose |
+| :--- | :--- |
+| `./mvnw clean package` | Build a runnable JAR package. |
+| `./mvnw spring-boot:run` | Start the application in development mode. |
+| `java -jar target/tinytask-0.0.1-SNAPSHOT.jar` | Run the packaged application. |
+| `./mvnw clean test` | Run all unit tests (uses JUnit 5 and Spring Boot Test). |
+
+The server will be available at **`http://localhost:5050`**.
+
+## 📋 Example Requests (Using cURL)
+
+| Operation | cURL Command |
+| :--- | :--- |
+| **List tasks** | `curl -s http://localhost:5050/api/tasks` |
+| **Get by id** | `curl -s http://localhost:5050/api/tasks/1` |
+| **Create a task** | `curl -s -X POST http://localhost:5050/api/tasks -H 'Content-Type: application/json' -d '{"title":"Write README","done":false}'` |
+| **Toggle task done** | `curl -s -X PATCH http://localhost:5050/api/tasks/toggle/1` |
+| **Delete a task** | `curl -s -X DELETE http://localhost:5050/api/tasks/1` |

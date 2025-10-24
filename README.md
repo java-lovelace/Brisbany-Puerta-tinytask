@@ -1,104 +1,120 @@
 
-# ✅ TinyTask: A Minimal Task Management API
 
-**TinyTask** is a minimal RESTful API built to manage tasks. It provides core endpoints to create, read, toggle the status, and delete tasks. The application uses **Spring Boot 3.5.6** and persists data in a **PostgreSQL** database via **Spring Data JPA**.
+# ✨ Spring Boot Task Management Application
 
-## 💻 Technical Stack
-
-| Component | Technology/Library | Version/Details |
-| :--- | :--- | :--- |
-| **Language** | Java | 21 (JDK 21) |
-| **Framework** | Spring Boot | 3.5.6 |
-| **Persistence** | Spring Data JPA | Handles ORM via Hibernate |
-| **Database** | PostgreSQL | JDBC driver included |
-| **Build Tool** | Maven Wrapper | `mvnw`/`mvnw.cmd` included |
-| **Helper** | Lombok | Boilerplate code reduction |
-
-The application's entry point is the main class: `com.crudactivity.tinytask.TinytaskApplication`.
+This is a **Full-Stack Task Management** application built with a Spring Boot backend (for a REST API) and a modern JavaScript/frontend.
 
 ---
 
-## 📌 Domain Model & Validation
+## 🚀 Getting Started
 
-The API manages a single entity: **`Task`**.
+To run this project locally, you need a Java environment and a PostgreSQL instance.
 
-| Field | Type | Description |
+### ⚙️ Prerequisites
+
+* **Java 17+**
+* **Maven** or **Gradle** (The `mvnw` wrapper is included)
+* **PostgreSQL** Database
+
+### 🔑 Configuration
+
+1.  **Database Setup:** Update the file `backend/src/main/resources/application.properties` with your local PostgreSQL credentials (username and password).
+2.  **API URL:** The frontend is configured to communicate with the backend at `http://localhost:5050`. If you change the backend port, ensure you update the `API_URL` variable in `frontend/src/main.js`.
+
+### 🛠️ Build and Run
+
+| Component | Command | Description |
 | :--- | :--- | :--- |
-| `id` | `Long` | Primary key. |
-| `title` | `String` | The task description. **Required and must not be empty**. |
-| `done` | `Boolean` | Completion status (e.g., `true` or `false`). Defaults to `false`. |
+| **Backend (Spring Boot)** | `./mvnw spring-boot:run` | Starts the Spring Boot application on port `5050`. |
+| **Frontend (JS)** | `pnpm install` or `npm install` | Install dependencies. |
+| | `pnpm build` or `npm run build` | Compiles the frontend assets. |
+| | `pnpm preview` or `npm run preview` | Serves the frontend application. |
+
+---
+
+## 🌐 REST API Specification
+
+The API follows a RESTful design pattern for managing `Task` resources.
+
+**Base Path:** `/api/tasks`
+
+| Method | Path | Description | HTTP Status | Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/api/tasks` | Retrieve a list of all tasks. | `200 OK` | |
+| **GET** | `/api/tasks/{id}` | Retrieve a specific task by its ID. | `200 OK` / `404 Not Found` | |
+| **POST** | `/api/tasks` | Create a new task. | `201 Created` / `400 Bad Request` | **Request Body:** `{ "title": string, "done"?: boolean }` |
+| **PATCH** | `/api/tasks/toggle/{id}` | Toggle the completion status (`done`) of a task. | `200 OK` / `404 Not Found` | Uses `PATCH` for partial update of a single attribute. |
+| **DELETE** | `/api/tasks/{id}` | Permanently delete a task by ID. | `204 No Content` / `404 Not Found` | |
+
+### Domain Model: `Task`
+
+The core data structure representing a persistent task entity.
+
+| Field | Type | Constraint | Description |
+| :--- | :--- | :--- | :--- |
+| `id` | `Long` | Primary Key | Unique identifier. |
+| `title` | `String` | Required, Not Empty | The content of the task. |
+| `done` | `Boolean` | Defaults to `false` | Completion status of the task. |
 
 ### Error Handling
 
-Custom exceptions (`BadRequestException`, `NotFoundException`) are handled by the **`GlobalExceptionHandler`** to map errors to appropriate HTTP status codes (e.g., **400 Bad Request**, **404 Not Found**).
+Custom exceptions (`BadRequestException`, `NotFoundException`) are utilized and mapped to the appropriate **HTTP status codes** using a **`GlobalExceptionHandler`** (`@ControllerAdvice`). This ensures a consistent and clean error response format.
 
 ---
 
-## 🌐 REST API Overview
+## 📋 cURL Examples
 
-The base path for all task operations is **`/api/tasks`**. This is defined in the `TaskController`.
+Use these examples to quickly test the API endpoints from your terminal (assuming the backend runs on `http://localhost:5050`).
 
-| Action | Method | Path | Body / Params | HTTP Status | Notes |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **List All** | `GET` | `/api/tasks` | None | `200 OK` | Returns a list of all tasks. |
-| **Get By ID** | `GET` | `/api/tasks/{id}` | Path variable: `id` (`Long`) | `200 OK` or `404 Not Found` | Returns the task or an error if the ID is not found. |
-| **Create** | `POST` | `/api/tasks` | JSON: `{ "title": string, "done": boolean? }` | `200 OK` or `400 Bad Request` | `title` validation applies (cannot be empty). |
-| **Toggle Status** | `PATCH` | `/api/tasks/toggle/{id}` | Path variable: `id` (`Long`) | Implicit `200 OK` or `404 Not Found` | Toggles the boolean state of the `done` field. |
-| **Delete** | `DELETE` | `/api/tasks/{id}` | Path variable: `id` (`Long`) | Implicit `200 OK` or `404 Not Found` | Deletes the specified task. |
-
-### CORS Configuration
-
-A global CORS mapping is registered, allowing methods **GET**, **POST**, **PUT**, **DELETE**, and **PATCH** on all paths. Other CORS attributes follow Spring MVC defaults.
-
----
-
-## ⚙️ Requirements & Configuration
-
-### Prerequisites
-
-* **Java 21** (Ensure `JAVA_HOME` is set).
-* **PostgreSQL 14+** instance running.
-* Maven Wrapper is included, so a system install of Maven is optional.
-
-### Configuration Details
-
-The default configuration is in `src/main/resources/application.properties`:
-
-| Property | Default Value | Purpose |
-| :--- | :--- | :--- |
-| `server.port` | `5050` | The port the application runs on. |
-| `spring.datasource.url` | `jdbc:postgresql://localhost:5432/tinytask` | PostgreSQL connection URL (default DB name is `tinytask`). |
-| `spring.jpa.hibernate.ddl-auto` | `update` | Automatically creates/updates tables based on the entity model. |
-| `spring.jpa.show-sql` | `true` | Logs all SQL statements to the console. |
-
-
-### Database Setup
-
-1.  **Create Database:** Use `createdb tinytask` or `CREATE DATABASE tinytask;` in your PostgreSQL client.
-2.  **User Privileges:** Ensure the user in `spring.datasource.username`/`password` has access.
-3.  **Seed Data (Optional):** Manually execute `src/main/resources/script.sql` to bootstrap the table and add an example row.
-
----
-
-## 🚀 Build and Run
-
-Use the Maven Wrapper (`./mvnw`) for these common commands:
-
-| Command | Purpose |
+| Operation | Command |
 | :--- | :--- |
-| `./mvnw clean package` | Build a runnable JAR package. |
-| `./mvnw spring-boot:run` | Start the application in development mode. |
-| `java -jar target/tinytask-0.0.1-SNAPSHOT.jar` | Run the packaged application. |
-| `./mvnw clean test` | Run all unit tests (uses JUnit 5 and Spring Boot Test). |
+| **List Tasks** | `curl -s http://localhost:5050/api/tasks` |
+| **Get By ID** | `curl -s http://localhost:5050/api/tasks/1` |
+| **Create Task** | `curl -s -X POST http://localhost:5050/api/tasks -H 'Content-Type: application/json' -d '{"title":"Write README","done":false}'` |
+| **Toggle Status** | `curl -s -X PATCH http://localhost:5050/api/tasks/toggle/1` |
+| **Delete Task** | `curl -s -X DELETE http://localhost:5050/api/tasks/1` |
 
-The server will be available at **`http://localhost:5050`**.
+---
 
-## 📋 Example Requests (Using cURL)
+## 📁 Project Architecture
 
-| Operation | cURL Command |
-| :--- | :--- |
-| **List tasks** | `curl -s http://localhost:5050/api/tasks` |
-| **Get by id** | `curl -s http://localhost:5050/api/tasks/1` |
-| **Create a task** | `curl -s -X POST http://localhost:5050/api/tasks -H 'Content-Type: application/json' -d '{"title":"Write README","done":false}'` |
-| **Toggle task done** | `curl -s -X PATCH http://localhost:5050/api/tasks/toggle/1` |
-| **Delete a task** | `curl -s -X DELETE http://localhost:5050/api/tasks/1` |
+```
+.
+├── backend/
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   ├── pom.xml
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/crudactivity/tinytask/
+│   │   │   │   ├── TinytaskApplication.java
+│   │   │   │   ├── config/
+│   │   │   │   │   └── CorsConfig.java
+│   │   │   │   ├── controller/
+│   │   │   │   │   ├── TaskController.java
+│   │   │   │   │   └── GlobalExceptionHandler.java
+│   │   │   │   ├── entity/
+│   │   │   │   │   └── Task.java
+│   │   │   │   ├── exception/
+│   │   │   │   │   ├── BadRequestException.java
+│   │   │   │   │   └── NotFoundException.java
+│   │   │   │   ├── repository/
+│   │   │   │   │   └── TaskRepository.java
+│   │   │   │   └── service/
+│   │   │   │       └── TaskService.java
+│   │   │   └── resources/
+│   │   │       ├── application.properties
+│   │   │       └── script.sql
+│   │   └── test/java/com/crudactivity/tinytask/
+│   │       └── TinytaskApplicationTests.java
+│
+├── frontend/
+│   ├── index.html
+│   ├── package.json
+│   ├── pnpm-lock.yaml
+│   └── src/
+│       ├── main.js
+│       └── style.css
+│
+└── README.md
+```
